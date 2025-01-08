@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import  { useContext } from 'react'
 import Login from './Pages/Login'
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -13,9 +13,9 @@ import DoctorsList from './Pages/Admin/DoctorsList';
 
 const App = () => {
 
-  const {adminToken } = useContext(AdminContext);
+  const {aToken} = useContext(AdminContext);
 
-  return adminToken ? (
+  return aToken ? (
     <div className='bg-[#F8F9FD]'>
       <ToastContainer />
       <Navbar />
@@ -33,10 +33,10 @@ const App = () => {
       
     </div>
   ) : (
-      <div>
+      <>
         <Login />
         <ToastContainer />
-      </div>
+      </>
   )
 }
 

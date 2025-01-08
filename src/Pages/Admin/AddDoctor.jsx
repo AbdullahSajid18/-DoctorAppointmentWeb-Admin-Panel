@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { assets } from "../../assets/assets";
 import { AdminContext } from "../../Context/AdminContext";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const AddDoctor = () => {
   const [docImage, setDocImage] = useState(false);
@@ -16,43 +17,75 @@ const AddDoctor = () => {
   const [address1, setAddress1] = useState("");
   const [address2, setAddress2] = useState("");
 
-  const {backendUrl, adminToken} = useContext(AdminContext);
+  const { backendUrl, aToken } = useContext(AdminContext);
 
-
-
-  const onSubmitHandler = async (event) => {
+  const formSubmitHandler = async (event) => {
     event.preventDefault();
 
     try {
-      
       if (!docImage) {
         return toast.error("Please upload doctor image");
       }
+
       // Creating form data
       const formData = new FormData();
       formData.append("image", docImage);
       formData.append("name", name);
       formData.append("email", email);
       formData.append("password", password);
-      formData.append("degree", degree);
+      formData.append("experience", experience);
       formData.append("fees", Number(fees));
       formData.append("about", about);
       formData.append("speciality", speciality);
-      formData.append("education", education);
-      formData.append("address1", address1);
-      formData.append("address2", address2);
-      
+      formData.append("degree", degree);
+      formData.append(
+        "address",
+        JSON.stringify({ line1: address1, line2: address2 })
+      );
 
+      // Debugging: Log form data content
+      formData.forEach((value, key) => {
+        console.log(`${key} : ${value}`);
+      });
+
+      // Sending API request to add doctor
+      const { data } = await axios.post(
+        `${backendUrl}/api/admin/add-doctor`,
+        formData,
+        {
+          headers: {
+            aToken  // Correct way to send JWT
+          },
+        }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        setDocImage(false);
+        setName("");
+        setEmail("");
+        setPassword("");
+        setExperience("1 Year");
+        setFees("");
+        setAbout("");
+        setSpeciality("General physician");
+        setDegree("");
+        setAddress1("");
+        setAddress2("");
+        
+      } else {
+        toast.error(data.message);
+      }
     } catch (error) {
-      
+      console.error("Error during API call:", error);
+      toast.error(
+        error.response?.data?.message || "An unexpected error occurred."
+      );
     }
-    
-    
-    
   };
 
   return (
-    <form onSubmit={onSubmitHandler} className="w-full m-5">
+    <form onSubmit={formSubmitHandler} className="w-full m-5">
       <p className="mb-3 text-lg font-medium">Add Doctor</p>
 
       <div className="w-full max-w-4xl px-8 py-8 bg-white border rounded max-h-[80vh] overflow-y-scroll">
@@ -83,8 +116,8 @@ const AddDoctor = () => {
             <div className="mb-4">
               <p>Doctor Name</p>
               <input
-                value={name}
                 onChange={(e) => setName(e.target.value)}
+                value={name}
                 type="text"
                 placeholder="Enter your name"
                 className="w-full p-2 border border-gray-300 rounded"
@@ -95,8 +128,8 @@ const AddDoctor = () => {
             <div className="mb-4">
               <p>Doctor Email</p>
               <input
-                value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                value={email}
                 type="email"
                 placeholder="Enter your email"
                 className="w-full p-2 border border-gray-300 rounded"
@@ -107,8 +140,8 @@ const AddDoctor = () => {
             <div className="mb-4">
               <p>Doctor Password</p>
               <input
-                value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                value={password}
                 type="password"
                 placeholder="Enter password"
                 className="w-full p-2 border border-gray-300 rounded"
@@ -119,8 +152,8 @@ const AddDoctor = () => {
             <div className="mb-4">
               <p>Experience</p>
               <select
-                value={experience}
                 onChange={(e) => setExperience(e.target.value)}
+                value={experience}
                 className="w-full p-2 border border-gray-300 rounded"
                 required
               >
@@ -140,9 +173,9 @@ const AddDoctor = () => {
             <div className="mb-4">
               <p>Fees</p>
               <input
-                value={fees}
                 onChange={(e) => setFees(e.target.value)}
-                type="text"
+                value={fees}
+                type="number"
                 placeholder="Enter fees"
                 className="w-full p-2 border border-gray-300 rounded"
                 required
@@ -152,8 +185,8 @@ const AddDoctor = () => {
             <div className="mb-4">
               <p>About Doctor</p>
               <textarea
-                value={about}
                 onChange={(e) => setAbout(e.target.value)}
+                value={about}
                 placeholder="Write about Yourself"
                 rows={5}
                 className="w-full p-2 border border-gray-300 rounded"
@@ -161,7 +194,10 @@ const AddDoctor = () => {
               />
             </div>
 
-            <button type="submit" className="px-10 py-3 mt-4 text-white rounded-full bg-primary">
+            <button
+              type="submit"
+              className="px-10 py-3 mt-4 text-white rounded-full bg-primary"
+            >
               Add Doctor
             </button>
           </div>
@@ -171,8 +207,8 @@ const AddDoctor = () => {
             <div className="mb-4">
               <p>Speciality</p>
               <select
-                value={speciality}
                 onChange={(e) => setSpeciality(e.target.value)}
+                value={speciality}
                 className="w-full p-2 border border-gray-300 rounded"
                 required
               >
@@ -188,8 +224,8 @@ const AddDoctor = () => {
             <div className="mb-4">
               <p>Education</p>
               <input
-                value={degree}
                 onChange={(e) => setDegree(e.target.value)}
+                value={degree}
                 type="text"
                 placeholder="Enter Education"
                 className="w-full p-2 border border-gray-300 rounded"
@@ -200,16 +236,16 @@ const AddDoctor = () => {
             <div className="mb-4">
               <p>Address</p>
               <input
-                value={address1}
                 onChange={(e) => setAddress1(e.target.value)}
+                value={address1}
                 type="text"
                 placeholder="Enter Address 1"
                 className="w-full p-2 border border-gray-300 rounded"
                 required
               />
               <input
-                value={address2}
                 onChange={(e) => setAddress2(e.target.value)}
+                value={address2}
                 type="text"
                 placeholder="Enter Address 2"
                 className="w-full p-2 mt-2 border border-gray-300 rounded"
